@@ -1,0 +1,157 @@
+## Lektüre & Quiz: `S3` 
+
+Lesen Sie das [`S3`](https://adv-r.hadley.nz/s3.html) Kapitel von H. Wickham's *Advanced R*. 
+Bearbeiten Sie (mindestens) die folgenden von dort übernommenen/inspirierten Aufgaben:
+
+- Was tut die `as.data.frame.data.frame()` Methode? Warum ist das verwirrend? Wie können Sie derartige Verwirrung in Ihrem eigenen Code vermeiden?
+
+Antwort: Die Methode `as.data.frame.data.frame()` wird aufgerufen durch die generische Funktion `as.data.frame`, welche aus Objekten data frames macht. Heißt `as.data.frame` angewandt auf einen data frame ruft die Funktion `as.data.frame.data.frame` auf.
+
+Verwirrend ist die Methode aufgrund der vierfachen Verwendung von `.`, auf den ersten Blick ist nicht klar ist ob es sich jetzt um eine Methode für die generische Funktion `as`, `as.data`, `as.data.frame` oder `as.data.frame.data` handelt. Dies kann vermieden werden indem man bei Klassen- und Funktionen- namen keinen Punkt sondern zB `_` verwendet. Beispiel: `as_data_frame.data_frame()`.
+
+
+
+- Beschreiben/erklären Sie das Verhalten dieses Codes:
+```r
+set.seed(1014)
+some_days <- as.Date("2019-11-24") + sample(10, 5)
+mean(some_days)
+# [1] "2019-11-30"
+mean(unclass(some_days))
+# [1] 18230.4
+```
+
+Antwort: Für ein Integer `n` ergibt `as.Date("2019-11-24") + n` das Datum welches `n` Tage nachdem 24.11.2019 liegt. Damit ist `some_days` ein Vektor mit Objekten der Klasse Date. Durch `mean(some_days)` wird die Methode `mean.Date` aufgerufen, welche das Datum "2019-11-30" ausrechnet. Durch `unclass(some_days)` verlieren die Objekte ihre Date Klasse und man erhält einen numerischen Vektor. Der numerische Wert ist jeweils die Anzahl der Tage, welche das Datum vom 01.01.1970 entfernt ist. Von diesen Tagen wird der Mittelwert berechnet mithilfe der Methode `mean.default`. Das heißt der 30.11.2019 kommt 18230 Tage nachdem 01.01.1970.
+
+
+
+- Welche Klasse hat `x` im folgenden Code? Auf welchem *base type* basiert diese Klasse? Welche Attribute nutzt sie und wie sind die mathematischen Eigenschaften von Verteilungsfunktionen hier konkret implementiert? 
+```r
+x <- ecdf(rpois(100, 10))
+x
+# Empirical CDF 
+# Call: ecdf(rpois(100, 10))
+#  x[1:15] =      1,      4,      5,  ...,     16,     17
+```
+
+Antwort: `x` ist ein Objekt der Klasse ecdf. Es basiert auf den *base type* closure. Als Attribute nutzt sie die Klassen (ecdf, stepfun, function) und den Funktionsaufruf. Die Mathematischen Eigenschaften sind als Treppenfunktionen (stepfun) implementiert.
+```{r}
+x <- ecdf(rpois(100, 10))
+
+typeof(x)
+
+attributes(x)
+
+```
+
+
+
+- Schreiben Sie einen neuen low-level Konstruktor für `data.frame`-Objekte (ohne die Funktionen `as.data.frame()` oder `data.frame()` zu benutzen, selbstverständlich). Machen Sie sich zunächst klar: Auf welchem *base type* basiert `data.frame`? Welche Attribute nutzt `data.frame`? Welche Restriktionen gelten für die verschiedenen Einträge und Attribute?  
+    *Hinweis*: Sehen Sie sich dafür zunächst mal so etwas wie `str(unclass(<irgend ein data.frame>))` an.
+    
+Antwort: 
+```{r}
+new_data.frame <- function(list = list(), row.names = NULL){
+  checkmate::assert_list(list)
+  nrow <- unique(sapply(list, FUN = length))
+  checkmate::assert_number(nrow)
+  
+  if (checkmate::test_null(row.names)) {
+    row.names <- seq_len(nrow)
+  }
+  
+  checkmate::assert_set_equal(nrow, length(row.names))
+  
+  structure(
+    list,
+    class = "data.frame",
+    row.names = row.names
+  )
+  
+}
+
+# test
+new_data.frame(list(a = rnorm(5), b = rnorm(5)))
+new_data.frame(list(a = rnorm(5), b = rnorm(5)),
+               row.names = c("a","b","c","d","e"))
+
+testthat::expect_error({
+  new_data.frame(list(a = rnorm(5), b = rnorm(6)))
+  new_data.frame(list(a = rnorm(5), b = rnorm(5)), row.names = "fail")
+  new_data.frame(c(a = rnorm(5), b = rnorm(5)), row.names = "fail")
+})
+
+
+
+```
+
+
+    
+- Kategorisieren Sie die Klassen der Rückgabe-Objekte von `lm(), factor(), table(), as.Date(), as.POSIXct(), ecdf(), ordered(), I()` in die Klassentypen *vector class*, *record style class*, *scalar class* die in *Advanced R* beschrieben  werden.
+
+```{r}
+list(
+  "vector class" = c("factor","as.Date", "as.POSIXct","table", "ordered", "I"),
+  "record style class" = c(""),
+  "scalar class" = c("lm", "ecdf")
+)
+```
+
+
+
+- Wie sähe ein Konstruktor `new_lm` für Objekte der Klasse `lm` aus? Warum wäre ein solcher Konstruktor vermutlich nicht besonders nützlich? 
+
+
+Antwort:
+```{r}
+
+new_lm <- function(
+  coefficients, residuals, effects, rank, fitted.values, assign, qr,
+  df.residual, xlevels, call, terms, model){
+  
+  checkmate::assert_double(coefficients)
+  checkmate::assert_double(residuals)
+  checkmate::assert_double(effects)
+  checkmate::assert_integer(rank)
+  checkmate::assert_double(fitted.values)
+  checkmate::assert_integer(assign)
+  checkmate::assert_list(qr)
+  checkmate::assert_integer(df.residual)
+  checkmate::assert_list(xlevels)
+  checkmate::assert(
+    is.language(call),
+    is.language(terms),
+    combine = "and"
+  )
+  checkmate::assert_list(model)
+  
+  structure(
+    list(
+      coefficients = coefficients,
+      residuals = residuals,
+      effects = effects,
+      rank = rank, 
+      fitted.values = fitted.values,
+      assign = assign,
+      qr = qr,
+      df.residual = df.residual,
+      xlevels = xlevels,
+      call = call,
+      terms = terms, 
+      model = model
+    ),
+    class = "lm"
+  )
+}
+
+```
+Um diesen Constructor zu nutzen werden jedoch Werte benötigt die man vom *lm* jedoch berechnet haben möchte (zB die Residuen). Außer man bestimmt dementsprechende defaults aber dann könnte man es gleich einfach den `lm` Befehl verwenden.
+
+
+
+- Lesen Sie den Quellcode für `t()` und `t.test()`. Ist `t.test()` eine generische S3 Funktion oder eine S3 Methode? Was passiert im Detail wenn sie `t()` auf ein S3-Objekt mit Klasse `test` anwenden (s.u.)? Warum?
+```r
+x <- structure(1:10, class = "test")
+t(x)
+```
+
