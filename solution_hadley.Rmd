@@ -34,7 +34,7 @@ x
 #  x[1:15] =      1,      4,      5,  ...,     16,     17
 ```
 
-Antwort: `x` ist ein Objekt der Klasse ecdf. Es basiert auf den *base type* closure. Als Attribute nutzt sie die Klassen (ecdf, stepfun, function) und den Funktionsaufruf. Die Mathematischen Eigenschaften sind als Treppenfunktionen (stepfun) implementiert.
+Antwort: `x` ist ein Objekt der Klasse ecdf. Es basiert auf den *base type* closure. Als Attribute nutzt sie die Klassen ecdf, stepfun und function und den Funktionsaufruf. Die Mathematischen Eigenschaften sind als Treppenfunktionen (stepfun) implementiert.
 ```{r}
 x <- ecdf(rpois(100, 10))
 
@@ -155,3 +155,4 @@ x <- structure(1:10, class = "test")
 t(x)
 ```
 
+Antwort: Okay. `t.test()` ist eine generische S3 Funktion. `x` ist von der Klasse *test*, das heißt `t(x)` sucht nach der Funktion `t.test` und führt dementsprechend einen t-test mit den Vektor durch ABER eigentlich haben die Funktionen `t` und `t.test` nicht wirklich was miteinander zu tun, nur durch diese unglückliche Abtrennung mit *.* entsteht ein Zusammenhang der eigentlich  nicht da ist. 
