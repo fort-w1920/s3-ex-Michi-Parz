@@ -21,16 +21,18 @@ bb.list <- function(list) {
   structure(lapply(list, bb), class = "bb")
 }
 
-bb.factor <- function(x) {
-  char <- as.character(x)
+# DES NOCH ÜBERPRÜFEN: Geht des auch für zweimal den selben factor
+# uuuund factor und ordered kann man zusammenfassen.
+bb.factor <- function(factor) {
+  char <- as.character(factor)
   structure(
     factor(bb(char), levels = bb(sort(char))),
     class = c("bb", "factor")
   )
 }
 
-bb.ordered <- function(x) {
-  char <- as.character(x)
+bb.ordered <- function(ordered) {
+  char <- as.character(ordered)
   structure(
     ordered(bb(char), levels = bb(sort(char))),
     class = c("bb", "ordered")
