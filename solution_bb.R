@@ -10,6 +10,7 @@ new_bb <- function(text) {
 
 bb <- function(object, ...) UseMethod("bb")
 
+
 bb.default <- function(text) {
   if (!checkmate::test_character(text)) {
     stop(bb("non-character objects cannot be turned into bb-objects!"))
@@ -17,24 +18,19 @@ bb.default <- function(text) {
   new_bb(text)
 }
 
-bb.list <- function(list) {
-  structure(lapply(list, bb), class = "bb")
+bb.list <- function(text) {
+  structure(lapply(text, bb), class = c("bb","list"))
 }
 
-# DES NOCH ÜBERPRÜFEN: Geht des auch für zweimal den selben factor
-# uuuund factor und ordered kann man zusammenfassen.
-bb.factor <- function(factor) {
-  char <- as.character(factor)
-  structure(
-    factor(bb(char), levels = bb(sort(char))),
-    class = c("bb", "factor")
-  )
-}
 
-bb.ordered <- function(ordered) {
-  char <- as.character(ordered)
+bb.factor <- function(text) {
+  old_class <- class(text)
+
+  character_text <- as.character(text)
+  unique_character <- unique(character_text)
+
   structure(
-    ordered(bb(char), levels = bb(sort(char))),
-    class = c("bb", "ordered")
+    factor(bb(character_text), levels = bb(sort(unique_character))),
+    class = c("bb", old_class)
   )
 }

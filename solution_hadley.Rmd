@@ -145,7 +145,7 @@ new_lm <- function(
 }
 
 ```
-Um diesen Constructor zu nutzen werden jedoch Werte benötigt die man vom *lm* jedoch berechnet haben möchte (zB die Residuen). Außer man bestimmt dementsprechende defaults aber dann könnte man es gleich einfach den `lm` Befehl verwenden.
+Um diesen Konstruktor zu nutzen werden jedoch Werte benötigt die man vom *lm* jedoch berechnet haben möchte (zB die Residuen). Außer man bestimmt dementsprechende defaults aber dann könnte man gleich einfach den `lm` Befehl verwenden.
 
 
 
